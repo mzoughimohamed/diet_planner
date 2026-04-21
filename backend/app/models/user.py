@@ -20,4 +20,4 @@ class User(Base):
     goal: Mapped[str] = mapped_column(String(20), default="maintain")
     activity_level: Mapped[str] = mapped_column(String(20), default="moderate")
     daily_calorie_target: Mapped[int] = mapped_column(Integer, default=2000)
-    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
