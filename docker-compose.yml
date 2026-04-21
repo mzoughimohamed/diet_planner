@@ -25,9 +25,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_USER: diet
-      POSTGRES_PASSWORD: diet_secret
-      POSTGRES_DB: dietplanner
+      POSTGRES_USER: ${POSTGRES_USER:-diet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-diet_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-dietplanner}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -44,7 +44,7 @@ services:
     ports:
       - "11434:11434"
     restart: unless-stopped
-    entrypoint: ["/bin/sh", "-c", "ollama serve & sleep 5 && ollama pull llama3.2 && wait"]
+    entrypoint: ["/bin/sh", "-c", "ollama serve & until ollama list 2>/dev/null; do sleep 2; done && ollama pull llama3.2 && wait"]
 
 volumes:
   postgres_data:
