@@ -11,6 +11,21 @@ from app.schemas.shopping_list import ShoppingListItemCreate, ShoppingListItemOu
 router = APIRouter()
 
 
+@router.get("", response_model=list[ShoppingListOut])
+async def list_shopping_lists(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    result = await db.execute(select(ShoppingList).where(ShoppingList.user_id == current_user.id))
+    shopping_lists = result.scalars().all()
+    output = []
+    for sl in shopping_lists:
+        items_result = await db.execute(select(ShoppingListItem).where(ShoppingListItem.shopping_list_id == sl.id))
+        items = items_result.scalars().all()
+        output.append(ShoppingListOut.model_validate({**sl.__dict__, "items": items}))
+    return output
+
+
 @router.get("/{list_id}", response_model=ShoppingListOut)
 async def get_shopping_list(
     list_id: int,

@@ -38,12 +38,19 @@ async def generate_shopping_list(
     )
     entries = entries_result.scalars().all()
 
+    # Bulk-load all recipes referenced by entries in one query
+    recipe_ids = [e.recipe_id for e in entries if e.recipe_id]
+    if recipe_ids:
+        recipes_result = await db.execute(select(Recipe).where(Recipe.id.in_(recipe_ids)))
+        recipes_by_id = {r.id: r for r in recipes_result.scalars().all()}
+    else:
+        recipes_by_id = {}
+
     aggregated: dict[str, dict] = {}
     for entry in entries:
         if not entry.recipe_id:
             continue
-        recipe_result = await db.execute(select(Recipe).where(Recipe.id == entry.recipe_id))
-        recipe = recipe_result.scalar_one_or_none()
+        recipe = recipes_by_id.get(entry.recipe_id)
         if not recipe:
             continue
         for ingredient in recipe.ingredients:
@@ -57,6 +64,15 @@ async def generate_shopping_list(
                 aggregated[key]["quantity"] = (aggregated[key]["quantity"] or 0) + qty
             else:
                 aggregated[key] = {"name": ingredient["name"], "quantity": qty or None, "unit": unit or None}
+
+    # Delete any existing shopping list for this plan (idempotent regeneration)
+    existing_result = await db.execute(
+        select(ShoppingList).where(ShoppingList.meal_plan_id == plan_id, ShoppingList.user_id == user_id)
+    )
+    existing = existing_result.scalar_one_or_none()
+    if existing:
+        await db.delete(existing)
+        await db.flush()
 
     shopping_list = ShoppingList(user_id=user_id, meal_plan_id=plan_id)
     db.add(shopping_list)
