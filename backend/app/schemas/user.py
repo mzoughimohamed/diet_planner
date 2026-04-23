@@ -1,18 +1,19 @@
 # backend/app/schemas/user.py
 from datetime import datetime
-from pydantic import BaseModel, EmailStr
+from typing import Literal
+from pydantic import BaseModel, EmailStr, Field
 
 
 class UserRegister(BaseModel):
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8)
     name: str
     age: int | None = None
     gender: str | None = None
     height_cm: float | None = None
     weight_kg: float | None = None
-    goal: str = "maintain"
-    activity_level: str = "moderate"
+    goal: Literal["lose", "maintain", "gain"] = "maintain"
+    activity_level: Literal["sedentary", "light", "moderate", "active", "very_active"] = "moderate"
 
 
 class UserLogin(BaseModel):
@@ -26,8 +27,8 @@ class UserUpdate(BaseModel):
     gender: str | None = None
     height_cm: float | None = None
     weight_kg: float | None = None
-    goal: str | None = None
-    activity_level: str | None = None
+    goal: Literal["lose", "maintain", "gain"] | None = None
+    activity_level: Literal["sedentary", "light", "moderate", "active", "very_active"] | None = None
     daily_calorie_target: int | None = None
 
 

@@ -1,6 +1,7 @@
 # backend/app/schemas/meal_plan.py
 from datetime import date, datetime
-from pydantic import BaseModel
+from typing import Literal
+from pydantic import BaseModel, Field
 
 
 class MealPlanCreate(BaseModel):
@@ -19,18 +20,18 @@ class MealPlanOut(BaseModel):
 
 
 class MealPlanEntryCreate(BaseModel):
-    day_of_week: int  # 0-6
-    meal_type: str    # breakfast|lunch|dinner|snack
+    day_of_week: int = Field(ge=0, le=6)
+    meal_type: Literal["breakfast", "lunch", "dinner", "snack"]
     recipe_id: int | None = None
     custom_meal_name: str | None = None
-    servings: float = 1.0
+    servings: float = Field(default=1.0, gt=0)
     calories_override: float | None = None
 
 
 class MealPlanEntryUpdate(BaseModel):
     recipe_id: int | None = None
     custom_meal_name: str | None = None
-    servings: float | None = None
+    servings: float | None = Field(default=None, gt=0)
     calories_override: float | None = None
 
 

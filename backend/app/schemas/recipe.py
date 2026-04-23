@@ -1,6 +1,6 @@
 # backend/app/schemas/recipe.py
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class IngredientItem(BaseModel):
@@ -14,11 +14,11 @@ class RecipeCreate(BaseModel):
     description: str | None = None
     image_url: str | None = None
     prep_time_min: int | None = None
-    servings: int = 1
-    calories: float = 0
-    protein_g: float = 0
-    carbs_g: float = 0
-    fat_g: float = 0
+    servings: int = Field(default=1, ge=1)
+    calories: float = Field(default=0, ge=0)
+    protein_g: float = Field(default=0, ge=0)
+    carbs_g: float = Field(default=0, ge=0)
+    fat_g: float = Field(default=0, ge=0)
     ingredients: list[IngredientItem] = []
     instructions: str | None = None
     is_public: bool = False
@@ -51,7 +51,7 @@ class RecipeOut(BaseModel):
     protein_g: float
     carbs_g: float
     fat_g: float
-    ingredients: list
+    ingredients: list[IngredientItem]
     instructions: str | None
     is_public: bool
     created_at: datetime
