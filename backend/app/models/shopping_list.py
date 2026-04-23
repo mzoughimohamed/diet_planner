@@ -22,5 +22,5 @@ class ShoppingListItem(Base):
     ingredient_name: Mapped[str] = mapped_column(String, nullable=False)
     quantity: Mapped[float | None] = mapped_column(Float, nullable=True)
     unit: Mapped[str | None] = mapped_column(String(50), nullable=True)
-    category: Mapped[str] = mapped_column(String(50), default="other")
-    is_checked: Mapped[bool] = mapped_column(Boolean, default=False)
+    category: Mapped[str] = mapped_column(String(50), server_default="other")
+    is_checked: Mapped[bool] = mapped_column(Boolean, server_default="false")

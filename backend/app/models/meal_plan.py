@@ -24,5 +24,5 @@ class MealPlanEntry(Base):
     meal_type: Mapped[str] = mapped_column(String(20), nullable=False)  # breakfast|lunch|dinner|snack
     recipe_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("recipes.id", ondelete="SET NULL"), nullable=True)
     custom_meal_name: Mapped[str | None] = mapped_column(String, nullable=True)
-    servings: Mapped[float] = mapped_column(Float, default=1.0)
+    servings: Mapped[float] = mapped_column(Float, server_default="1")
     calories_override: Mapped[float | None] = mapped_column(Float, nullable=True)
