@@ -79,7 +79,11 @@ export default function MealPlanner() {
       if (!activePlan) throw new Error('No active plan')
       return generateShoppingList(activePlan.id)
     },
-    onSuccess: () => alert('Shopping list generated! Check the Shopping List page.'),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['shopping-list', activePlan?.id], data)
+      alert('Shopping list generated! Check the Shopping List page.')
+    },
+    onError: () => alert('Failed to generate shopping list. Please try again.'),
   })
 
   const prevWeek = () => { const d = new Date(weekStart); d.setDate(d.getDate() - 7); setWeekStart(d) }
