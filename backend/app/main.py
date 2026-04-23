@@ -1,10 +1,25 @@
 # backend/app/main.py
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.ext.asyncio import create_async_engine
 
+from app.core.config import settings
+from app.core.database import Base
 from app.routers import auth, recipes, meal_plans, shopping_lists, progress, ai
 
-app = FastAPI(title="Diet Planner API", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    engine = create_async_engine(settings.database_url)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    await engine.dispose()
+    yield
+
+
+app = FastAPI(title="Diet Planner API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
