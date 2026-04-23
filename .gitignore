@@ -1,13 +1,49 @@
-.env
+# Python
 __pycache__/
 *.pyc
 *.pyo
-.pytest_cache/
+*.pyd
 *.egg-info/
+*.egg
+.eggs/
 dist/
+build/
 .venv/
+.venv312/
 venv/
+env/
+.Python
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.db
 test_diet.db
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Frontend
 node_modules/
 frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Claude / Superpowers
 .superpowers/
+.claude/settings.local.json
+
+# Docker
+.dockerignore
