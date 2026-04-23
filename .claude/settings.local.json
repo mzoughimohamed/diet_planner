@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(C:/Users/moham/.claude/plugins/cache/claude-plugins-official/superpowers/5.0.7/skills/brainstorming/scripts/start-server.sh *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git diff *)",
+      "Bash(cat .env)",
+      "Bash(pip install *)",
+      "Bash(python -c \"import pydantic; print\\(pydantic.__version__\\)\")",
+      "Bash(python -m pip install \"pydantic[email]==2.7.1\" \"pydantic-settings==2.2.1\" fastapi==0.111.0 uvicorn aiosqlite)",
+      "Bash(python -m pip index versions pydantic-core)",
+      "Bash(python -m pip install \"pydantic[email]>=2.7\" \"pydantic-settings>=2.2\" \"fastapi>=0.111\" uvicorn aiosqlite)",
+      "Bash(DATABASE_URL=sqlite+aiosqlite:///./test.db JWT_SECRET=testsecret python -c \"from app.main import app; print\\('OK'\\)\")",
+      "Bash(git show *)",
+      "Bash(pip show *)",
+      "Bash(python -c \" from pydantic_settings import BaseSettings import warnings, sys with warnings.catch_warnings\\(record=True\\) as w: warnings.simplefilter\\('always'\\) class S\\(BaseSettings\\): x: str = 'test' class Config: env_file = '.env' if w: for warning in w: print\\('WARNING:', warning.category.__name__, str\\(warning.message\\)\\) else: print\\('No deprecation warnings for inner Config class'\\) \")",
+      "Bash(python -c \"from app.core.config import settings; print\\('DB URL prefix:', settings.database_url[:20]\\)\")",
+      "Bash(python -c \"from app.models import User, Recipe, MealPlan, MealPlanEntry, ShoppingList, ShoppingListItem, ProgressLog; print\\('All models imported OK'\\)\")",
+      "Bash(python -m pip install -r requirements.txt -q)",
+      "Bash(python -m pip install sqlalchemy[asyncio]==2.0.30 pydantic-settings==2.2.1 pydantic[email]==2.7.1 -q)",
+      "Bash(pip --version)",
+      "Bash(python -c \"import alembic; print\\(alembic.__file__\\)\")",
+      "Bash(python -c \"from app.models import User, Recipe, MealPlan, MealPlanEntry, ShoppingList, ShoppingListItem, ProgressLog; print\\('OK'\\)\")",
+      "Bash(python -c \"from app.schemas import UserRegister, RecipeCreate, MealPlanCreate, ShoppingListOut, ProgressLogCreate, AISuggestRequest; print\\('All schemas imported OK'\\)\")",
+      "Bash(python -c \"from app.schemas import UserRegister, RecipeCreate, MealPlanEntryCreate, ShoppingListOut, ProgressLogCreate, AISuggestRequest; print\\('All schemas OK'\\)\")",
+      "Bash(python -m py_compile app/core/auth.py app/services/nutrition.py)"
+    ]
+  }
+}

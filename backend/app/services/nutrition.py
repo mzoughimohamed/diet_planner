@@ -10,7 +10,7 @@ def calculate_daily_calories(
     goal: str,
 ) -> int:
     """Mifflin-St Jeor equation."""
-    if not all([weight_kg, height_cm, age, gender]):
+    if any(v is None for v in [weight_kg, height_cm, age, gender]):
         return 2000
 
     if gender.lower() == "male":
