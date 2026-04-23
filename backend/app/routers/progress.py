@@ -2,6 +2,7 @@ from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models.progress import ProgressLog
@@ -37,7 +38,7 @@ async def log_progress(
     db.add(log)
     try:
         await db.commit()
-    except Exception:
+    except IntegrityError:
         await db.rollback()
         raise HTTPException(status_code=409, detail="Already logged for this date")
     await db.refresh(log)
@@ -54,5 +55,5 @@ async def delete_progress(
     log = result.scalar_one_or_none()
     if not log:
         raise HTTPException(status_code=404, detail="Log not found")
-    await db.delete(log)
+    db.delete(log)
     await db.commit()
