@@ -52,7 +52,7 @@ export default function Recipes() {
               key={recipe.id}
               recipe={recipe}
               onEdit={() => navigate(`/recipes/${recipe.id}`)}
-              onDelete={() => { if (confirm('Delete this recipe?')) deleteMutation.mutate(recipe.id) }}
+              onDelete={() => { if (!deleteMutation.isPending && confirm('Delete this recipe?')) deleteMutation.mutate(recipe.id) }}
             />
           ))}
         </div>

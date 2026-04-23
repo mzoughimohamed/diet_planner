@@ -14,6 +14,17 @@ const EMPTY_FORM = {
 type FormShape = typeof EMPTY_FORM
 type NumericKey = 'calories' | 'protein_g' | 'carbs_g' | 'fat_g'
 
+const NUTRITION_LABELS: Record<NumericKey, string> = {
+  calories: 'Calories (kcal)',
+  protein_g: 'Protein (g)',
+  carbs_g: 'Carbs (g)',
+  fat_g: 'Fat (g)',
+}
+
+interface IngredientRow extends IngredientItem {
+  _key: string
+}
+
 export default function RecipeDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -21,13 +32,14 @@ export default function RecipeDetail() {
   const isNew = !id || id === 'new'
 
   const [form, setForm] = useState<FormShape>(EMPTY_FORM)
-  const [ingredients, setIngredients] = useState<IngredientItem[]>([])
+  const [ingredients, setIngredients] = useState<IngredientRow[]>([])
   const [error, setError] = useState('')
 
-  const { data: recipe } = useQuery({
+  const { data: recipe, isLoading: recipeLoading } = useQuery({
     queryKey: ['recipe', id],
     queryFn: () => getRecipe(Number(id)),
     enabled: !isNew,
+    staleTime: 0,
   })
 
   useEffect(() => {
@@ -44,7 +56,7 @@ export default function RecipeDetail() {
         instructions: recipe.instructions ?? '',
         is_public: recipe.is_public,
       })
-      setIngredients(recipe.ingredients)
+      setIngredients(recipe.ingredients.map((ing) => ({ ...ing, _key: crypto.randomUUID() })))
     }
   }, [recipe])
 
@@ -69,19 +81,22 @@ export default function RecipeDetail() {
       protein_g: Number(form.protein_g),
       carbs_g: Number(form.carbs_g),
       fat_g: Number(form.fat_g),
-      ingredients,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ingredients: ingredients.map(({ _key, ...ing }) => ing),
     })
   }
 
   const set = (key: keyof FormShape) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value }))
 
-  const addIngredient = () => setIngredients((i) => [...i, { name: '', quantity: undefined, unit: '' }])
-  const removeIngredient = (idx: number) => setIngredients((i) => i.filter((_, j) => j !== idx))
-  const setIngredient = (idx: number, field: keyof IngredientItem, value: string) =>
-    setIngredients((prev) => prev.map((item, j) =>
-      j === idx ? { ...item, [field]: field === 'quantity' ? Number(value) || undefined : value } : item
+  const addIngredient = () => setIngredients((i) => [...i, { name: '', quantity: undefined, unit: '', _key: crypto.randomUUID() }])
+  const removeIngredient = (key: string) => setIngredients((i) => i.filter((ing) => ing._key !== key))
+  const setIngredient = (key: string, field: keyof IngredientItem, value: string) =>
+    setIngredients((prev) => prev.map((item) =>
+      item._key === key ? { ...item, [field]: field === 'quantity' ? Number(value) || undefined : value } : item
     ))
+
+  if (!isNew && recipeLoading) return <div className="p-6 text-gray-400">Loading…</div>
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
@@ -120,9 +135,7 @@ export default function RecipeDetail() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {(['calories', 'protein_g', 'carbs_g', 'fat_g'] as NumericKey[]).map((key) => (
               <div key={key}>
-                <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
-                  {key.replace('_g', '').replace('_', ' ')}{key !== 'calories' ? ' (g)' : ' (kcal)'}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{NUTRITION_LABELS[key]}</label>
                 <input type="number" min="0" step="0.1" value={form[key]} onChange={set(key)} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
               </div>
             ))}
@@ -136,12 +149,12 @@ export default function RecipeDetail() {
               <Plus size={14} /> Add
             </button>
           </div>
-          {ingredients.map((ing, idx) => (
-            <div key={idx} className="flex gap-2 items-center">
-              <input placeholder="Name" value={ing.name} onChange={(e) => setIngredient(idx, 'name', e.target.value)} className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
-              <input placeholder="Qty" type="number" value={ing.quantity ?? ''} onChange={(e) => setIngredient(idx, 'quantity', e.target.value)} className="w-20 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
-              <input placeholder="Unit" value={ing.unit ?? ''} onChange={(e) => setIngredient(idx, 'unit', e.target.value)} className="w-20 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
-              <button type="button" onClick={() => removeIngredient(idx)} className="p-1.5 text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
+          {ingredients.map((ing) => (
+            <div key={ing._key} className="flex gap-2 items-center">
+              <input placeholder="Name" value={ing.name} onChange={(e) => setIngredient(ing._key, 'name', e.target.value)} className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              <input placeholder="Qty" type="number" value={ing.quantity ?? ''} onChange={(e) => setIngredient(ing._key, 'quantity', e.target.value)} className="w-20 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              <input placeholder="Unit" value={ing.unit ?? ''} onChange={(e) => setIngredient(ing._key, 'unit', e.target.value)} className="w-20 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" />
+              <button type="button" onClick={() => removeIngredient(ing._key)} className="p-1.5 text-gray-400 hover:text-red-500"><Trash2 size={14} /></button>
             </div>
           ))}
         </div>
