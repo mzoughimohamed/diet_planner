@@ -36,8 +36,8 @@ export const updateMe = (data: object) => api.put<User>('/auth/me', data).then((
 // Recipes
 export const getRecipes = (params?: object) => api.get<Recipe[]>('/recipes', { params }).then((r) => r.data)
 export const getRecipe = (id: number) => api.get<Recipe>(`/recipes/${id}`).then((r) => r.data)
-export const createRecipe = (data: object) => api.post<Recipe>('/recipes', data).then((r) => r.data)
-export const updateRecipe = (id: number, data: object) => api.put<Recipe>(`/recipes/${id}`, data).then((r) => r.data)
+export const createRecipe = (data: Record<string, unknown>) => api.post<Recipe>('/recipes', data).then((r) => r.data)
+export const updateRecipe = (id: number, data: Record<string, unknown>) => api.put<Recipe>(`/recipes/${id}`, data).then((r) => r.data)
 export const deleteRecipe = (id: number) => api.delete(`/recipes/${id}`)
 
 // Meal Plans
