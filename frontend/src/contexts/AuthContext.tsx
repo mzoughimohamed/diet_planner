@@ -6,14 +6,15 @@ import type { User } from '../lib/types'
 interface AuthContextValue {
   user: User | null
   isLoading: boolean
+  isError: boolean
   logout: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextValue>({ user: null, isLoading: true, logout: async () => {} })
+const AuthContext = createContext<AuthContextValue>({ user: null, isLoading: true, isError: false, logout: async () => {} })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
-  const { data: user = null, isLoading } = useQuery({
+  const { data: user = null, isLoading, isError } = useQuery({
     queryKey: ['me'],
     queryFn: getMe,
     retry: false,
@@ -21,12 +22,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   const logout = async () => {
-    await apiLogout()
-    queryClient.clear()
-    window.location.href = '/login'
+    try {
+      await apiLogout()
+    } finally {
+      queryClient.clear()
+      window.location.href = '/login'
+    }
   }
 
-  return <AuthContext.Provider value={{ user, isLoading, logout }}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={{ user, isLoading, isError, logout }}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => useContext(AuthContext)

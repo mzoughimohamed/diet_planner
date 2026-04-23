@@ -6,7 +6,7 @@ const api = axios.create({ withCredentials: true })
 api.interceptors.response.use(
   (r) => r,
   (err) => {
-    if (err.response?.status === 401 && window.location.pathname !== '/login') {
+    if (err.response?.status === 401 && !['/login', '/register'].includes(window.location.pathname)) {
       window.location.href = '/login'
     }
     return Promise.reject(err)

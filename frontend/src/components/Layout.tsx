@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -56,7 +57,7 @@ const SidebarContent = ({ userName, onNavClick, onLogout }: SidebarContentProps)
   </nav>
 )
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
