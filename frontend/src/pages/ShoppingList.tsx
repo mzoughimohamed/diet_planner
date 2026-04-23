@@ -36,9 +36,9 @@ export default function ShoppingList() {
   const deleteMutation = useMutation({
     mutationFn: (itemId: number) => {
       if (!list) throw new Error('No list')
-      return deleteShoppingItem(list.id, itemId)
+      return deleteShoppingItem(list.id, itemId).then(() => itemId)
     },
-    onSuccess: (_: void, itemId: number) => {
+    onSuccess: (itemId: number) => {
       queryClient.setQueryData(cacheKey, (old: ShoppingList | undefined) =>
         old ? { ...old, items: old.items.filter((i) => i.id !== itemId) } : old
       )
