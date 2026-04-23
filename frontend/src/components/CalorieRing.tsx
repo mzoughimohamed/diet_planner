@@ -7,7 +7,8 @@ interface CalorieRingProps {
 export default function CalorieRing({ eaten, target }: CalorieRingProps) {
   const radius = 54
   const circumference = 2 * Math.PI * radius
-  const pct = Math.min(eaten / target, 1)
+  const safeTarget = target || 1
+  const pct = Math.min(eaten / safeTarget, 1)
   const dash = pct * circumference
 
   return (

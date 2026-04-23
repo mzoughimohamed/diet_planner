@@ -6,7 +6,7 @@ interface MacroBarProps {
 }
 
 export default function MacroBar({ protein, carbs, fat }: MacroBarProps) {
-  const total = protein + carbs + fat || 1
+  const total = (protein + carbs + fat) || 1
   const segments = [
     { label: 'Protein', value: protein, color: 'bg-blue-500', pct: (protein / total) * 100 },
     { label: 'Carbs', value: carbs, color: 'bg-yellow-400', pct: (carbs / total) * 100 },

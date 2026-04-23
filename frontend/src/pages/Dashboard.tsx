@@ -14,7 +14,7 @@ export default function Dashboard() {
   const { data: plans = [] } = useQuery({ queryKey: ['meal-plans'], queryFn: getMealPlans })
 
   const activePlan = plans.find((p) => {
-    const start = new Date(p.week_start_date)
+    const start = new Date(p.week_start_date + 'T00:00:00')
     const end = new Date(start)
     end.setDate(start.getDate() + 6)
     return today >= start && today <= end
