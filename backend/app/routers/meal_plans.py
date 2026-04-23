@@ -9,6 +9,9 @@ from app.schemas.meal_plan import (
     MealPlanCreate, MealPlanDetail, MealPlanEntryCreate,
     MealPlanEntryOut, MealPlanEntryUpdate, MealPlanOut,
 )
+from app.services.shopping import generate_shopping_list
+from app.schemas.shopping_list import ShoppingListOut
+from app.models.shopping_list import ShoppingListItem
 
 router = APIRouter()
 
@@ -28,7 +31,7 @@ async def create_meal_plan(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    plan = MealPlan(user_id=current_user.id, **body.model_dump(mode="json"))
+    plan = MealPlan(user_id=current_user.id, **body.model_dump())
     db.add(plan)
     await db.commit()
     await db.refresh(plan)
@@ -111,3 +114,17 @@ async def delete_entry(
         raise HTTPException(status_code=404, detail="Entry not found")
     await db.delete(entry)
     await db.commit()
+
+
+@router.post("/{plan_id}/shopping-list", response_model=ShoppingListOut, status_code=201)
+async def create_shopping_list(
+    plan_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    shopping_list = await generate_shopping_list(plan_id, current_user.id, db)
+    if not shopping_list:
+        raise HTTPException(status_code=404, detail="Meal plan not found")
+    items_result = await db.execute(select(ShoppingListItem).where(ShoppingListItem.shopping_list_id == shopping_list.id))
+    items = items_result.scalars().all()
+    return ShoppingListOut.model_validate({**shopping_list.__dict__, "items": items})
