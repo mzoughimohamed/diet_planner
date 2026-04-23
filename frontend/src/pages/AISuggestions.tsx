@@ -22,6 +22,19 @@ export default function AISuggestions() {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
+  const abortRef = useRef<AbortController | null>(null)
+
+  useEffect(() => {
+    return () => { abortRef.current?.abort() }
+  }, [])
+
+  const appendToken = (token: string) => {
+    setMessages((m) => {
+      const last = m[m.length - 1]
+      return [...m.slice(0, -1), { ...last, content: last.content + token }]
+    })
+  }
+
   const sendMessage = async () => {
     if (!input.trim() || streaming) return
     const userMessage = input.trim()
@@ -30,11 +43,14 @@ export default function AISuggestions() {
     setStreaming(true)
     setMessages((m) => [...m, { role: 'assistant', content: '' }])
 
+    abortRef.current = new AbortController()
+
     try {
       const response = await fetch('/ai/suggest', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
+        signal: abortRef.current.signal,
         body: JSON.stringify({
           message: userMessage,
           context: {
@@ -53,23 +69,30 @@ export default function AISuggestions() {
       const decoder = new TextDecoder()
       let buffer = ''
 
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() ?? ''
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          const token = line.slice(6)
-          if (token === '[DONE]') { setStreaming(false); return }
-          setMessages((m) => {
-            const last = m[m.length - 1]
-            return [...m.slice(0, -1), { ...last, content: last.content + token }]
-          })
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n')
+          buffer = lines.pop() ?? ''
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue
+            const token = line.slice(6)
+            if (token === '[DONE]') { setStreaming(false); return }
+            appendToken(token)
+          }
         }
+        // Flush remaining buffer after stream ends
+        if (buffer.startsWith('data: ')) {
+          const token = buffer.slice(6)
+          if (token && token !== '[DONE]') appendToken(token)
+        }
+      } finally {
+        reader.cancel()
       }
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
       console.error('[ai]', err)
       setMessages((m) => [...m.slice(0, -1), { role: 'assistant', content: 'Sorry, something went wrong. Make sure Ollama is running.' }])
     } finally {

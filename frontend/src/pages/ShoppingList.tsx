@@ -11,17 +11,12 @@ export default function ShoppingList() {
   const { data: plans = [] } = useQuery({ queryKey: ['meal-plans'], queryFn: getMealPlans })
   const latestPlan = [...plans].sort((a, b) => b.id - a.id)[0]
 
-  const { data: list, isLoading } = useQuery({
+  const { data: list, isLoading, isError } = useQuery({
     queryKey: ['shopping-list', latestPlan?.id],
-    queryFn: async () => {
-      try {
-        return await generateShoppingList(latestPlan!.id)
-      } catch {
-        return null
-      }
-    },
+    queryFn: () => generateShoppingList(latestPlan!.id),
     enabled: !!latestPlan,
     staleTime: Infinity,
+    retry: false,
   })
 
   const toggleMutation = useMutation({
@@ -53,6 +48,7 @@ export default function ShoppingList() {
 
   if (!latestPlan) return <div className="p-6 text-gray-400">Create a meal plan first to generate a shopping list.</div>
   if (isLoading) return <div className="p-6 text-gray-400">Loading…</div>
+  if (isError) return <div className="p-6 text-red-500">Failed to load shopping list. Please try again.</div>
 
   const checked = list?.items.filter((i: ShoppingListItem) => i.is_checked).length ?? 0
   const total = list?.items.length ?? 0
@@ -106,9 +102,6 @@ export default function ShoppingList() {
         </>
       )}
 
-      {!list && !isLoading && (
-        <p className="text-gray-400 text-sm">No shopping list yet. Generate one from the Meal Planner.</p>
-      )}
     </div>
   )
 }
