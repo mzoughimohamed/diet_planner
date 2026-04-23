@@ -1,10 +1,10 @@
 // frontend/src/pages/Dashboard.tsx
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
-import { getMealPlans, getMealPlan } from '../lib/api'
+import { getMealPlans, getMealPlan, getRecipes } from '../lib/api'
 import CalorieRing from '../components/CalorieRing'
 import MacroBar from '../components/MacroBar'
-import type { MealPlanEntry } from '../lib/types'
+import type { MealPlanEntry, Recipe } from '../lib/types'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -26,9 +26,32 @@ export default function Dashboard() {
     enabled: !!activePlan,
   })
 
+  const { data: recipes = [] } = useQuery({ queryKey: ['recipes'], queryFn: getRecipes })
+
   const todayEntries: MealPlanEntry[] = planDetail?.entries.filter((e) => e.day_of_week === dayOfWeek) ?? []
 
-  const todayCalories = todayEntries.reduce((sum, e) => sum + (e.calories_override ?? 0), 0)
+  const getRecipe = (id: number | null) => recipes.find((r: Recipe) => r.id === id)
+
+  const todayCalories = Math.round(todayEntries.reduce((sum, e) => {
+    if (e.calories_override != null) return sum + e.calories_override
+    const recipe = getRecipe(e.recipe_id)
+    return sum + (recipe ? recipe.calories * e.servings : 0)
+  }, 0))
+
+  const todayProtein = Math.round(todayEntries.reduce((sum, e) => {
+    const recipe = getRecipe(e.recipe_id)
+    return sum + (recipe ? recipe.protein_g * e.servings : 0)
+  }, 0))
+
+  const todayCarbs = Math.round(todayEntries.reduce((sum, e) => {
+    const recipe = getRecipe(e.recipe_id)
+    return sum + (recipe ? recipe.carbs_g * e.servings : 0)
+  }, 0))
+
+  const todayFat = Math.round(todayEntries.reduce((sum, e) => {
+    const recipe = getRecipe(e.recipe_id)
+    return sum + (recipe ? recipe.fat_g * e.servings : 0)
+  }, 0))
 
   const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const
 
@@ -47,8 +70,7 @@ export default function Dashboard() {
 
         <div className="bg-white rounded-2xl p-6 shadow-sm border">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Macros Today</h2>
-          <MacroBar protein={0} carbs={0} fat={0} />
-          <p className="text-xs text-gray-400 mt-3">Macro breakdown available when meals have recipe nutrition data.</p>
+          <MacroBar protein={todayProtein} carbs={todayCarbs} fat={todayFat} />
         </div>
       </div>
 
@@ -62,7 +84,9 @@ export default function Dashboard() {
                 <div key={type} className="rounded-xl border p-4">
                   <p className="text-xs font-semibold text-gray-400 uppercase mb-2">{type}</p>
                   {entry ? (
-                    <p className="text-sm font-medium text-gray-800">{entry.custom_meal_name ?? `Recipe #${entry.recipe_id}`}</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      {entry.custom_meal_name ?? getRecipe(entry.recipe_id)?.name ?? '—'}
+                    </p>
                   ) : (
                     <p className="text-sm text-gray-300 italic">Not planned</p>
                   )}
