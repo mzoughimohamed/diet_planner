@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Check, Plus } from 'lucide-react'
 import { getMealPlans, updateShoppingItem, addShoppingItem, generateShoppingList } from '../lib/api'
-import type { ShoppingListItem } from '../lib/types'
+import type { ShoppingList, ShoppingListItem } from '../lib/types'
 
 export default function ShoppingList() {
   const queryClient = useQueryClient()
@@ -19,12 +19,18 @@ export default function ShoppingList() {
     retry: false,
   })
 
+  const cacheKey = ['shopping-list', latestPlan?.id]
+
   const toggleMutation = useMutation({
     mutationFn: ({ itemId, checked }: { itemId: number; checked: boolean }) => {
       if (!list) throw new Error('No list')
       return updateShoppingItem(list.id, itemId, { is_checked: checked })
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shopping-list', latestPlan?.id] }),
+    onSuccess: (updatedItem) => {
+      queryClient.setQueryData(cacheKey, (old: ShoppingList | undefined) =>
+        old ? { ...old, items: old.items.map((i) => (i.id === updatedItem.id ? updatedItem : i)) } : old
+      )
+    },
   })
 
   const addMutation = useMutation({
@@ -32,9 +38,11 @@ export default function ShoppingList() {
       if (!list) throw new Error('No list')
       return addShoppingItem(list.id, { ingredient_name: newItem, category: 'other' })
     },
-    onSuccess: () => {
+    onSuccess: (newItem) => {
       setNewItem('')
-      queryClient.invalidateQueries({ queryKey: ['shopping-list', latestPlan?.id] })
+      queryClient.setQueryData(cacheKey, (old: ShoppingList | undefined) =>
+        old ? { ...old, items: [...old.items, newItem] } : old
+      )
     },
   })
 
