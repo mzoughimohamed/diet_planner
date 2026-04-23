@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Check, Plus } from 'lucide-react'
-import { getMealPlans, updateShoppingItem, addShoppingItem, generateShoppingList } from '../lib/api'
+import { Check, Plus, Trash2 } from 'lucide-react'
+import { getMealPlans, updateShoppingItem, addShoppingItem, deleteShoppingItem, generateShoppingList } from '../lib/api'
 import type { ShoppingList, ShoppingListItem } from '../lib/types'
 
 export default function ShoppingList() {
@@ -29,6 +29,18 @@ export default function ShoppingList() {
     onSuccess: (updatedItem) => {
       queryClient.setQueryData(cacheKey, (old: ShoppingList | undefined) =>
         old ? { ...old, items: old.items.map((i) => (i.id === updatedItem.id ? updatedItem : i)) } : old
+      )
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (itemId: number) => {
+      if (!list) throw new Error('No list')
+      return deleteShoppingItem(list.id, itemId)
+    },
+    onSuccess: (_: void, itemId: number) => {
+      queryClient.setQueryData(cacheKey, (old: ShoppingList | undefined) =>
+        old ? { ...old, items: old.items.filter((i) => i.id !== itemId) } : old
       )
     },
   })
@@ -86,6 +98,14 @@ export default function ShoppingList() {
                     {item.ingredient_name}
                     {item.quantity && <span className="text-gray-400 ml-1">{item.quantity}{item.unit ? ` ${item.unit}` : ''}</span>}
                   </span>
+                  <button
+                    onClick={() => deleteMutation.mutate(item.id)}
+                    disabled={deleteMutation.isPending}
+                    className="p-1 text-gray-300 hover:text-red-500 disabled:opacity-40 flex-shrink-0"
+                    aria-label="Delete item"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               ))}
             </div>

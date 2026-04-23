@@ -13,6 +13,7 @@ export default function Progress() {
     notes: '',
   })
   const [error, setError] = useState('')
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const { data: logs = [] } = useQuery({ queryKey: ['progress'], queryFn: getProgress })
 
@@ -32,8 +33,9 @@ export default function Progress() {
   })
 
   const deleteMutation = useMutation({
-    mutationFn: deleteProgress,
+    mutationFn: (id: number) => { setDeletingId(id); return deleteProgress(id) },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['progress'] }),
+    onSettled: () => setDeletingId(null),
   })
 
   const chartData = [...logs]
@@ -120,7 +122,7 @@ export default function Progress() {
                   <td className="px-4 py-3">
                     <button
                       onClick={() => deleteMutation.mutate(log.id)}
-                      disabled={deleteMutation.isPending}
+                      disabled={deletingId === log.id}
                       className="p-1 text-gray-300 hover:text-red-500 disabled:opacity-40"
                       aria-label="Delete log entry"
                     >
