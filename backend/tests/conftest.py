@@ -44,7 +44,7 @@ async def client(db_session):
 @pytest.fixture
 async def auth_client(client):
     """Returns a client already logged in as a test user."""
-    await client.post("/auth/register", json={
+    resp = await client.post("/auth/register", json={
         "email": "test@example.com",
         "password": "password123",
         "name": "Test User",
@@ -55,4 +55,5 @@ async def auth_client(client):
         "goal": "maintain",
         "activity_level": "moderate",
     })
+    assert resp.status_code == 201, f"auth_client fixture registration failed: {resp.text}"
     return client
