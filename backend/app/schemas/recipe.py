@@ -29,11 +29,11 @@ class RecipeUpdate(BaseModel):
     description: str | None = None
     image_url: str | None = None
     prep_time_min: int | None = None
-    servings: int | None = None
-    calories: float | None = None
-    protein_g: float | None = None
-    carbs_g: float | None = None
-    fat_g: float | None = None
+    servings: int | None = Field(default=None, ge=1)
+    calories: float | None = Field(default=None, ge=0)
+    protein_g: float | None = Field(default=None, ge=0)
+    carbs_g: float | None = Field(default=None, ge=0)
+    fat_g: float | None = Field(default=None, ge=0)
     ingredients: list[IngredientItem] | None = None
     instructions: str | None = None
     is_public: bool | None = None

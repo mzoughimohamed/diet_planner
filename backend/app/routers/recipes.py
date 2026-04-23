@@ -13,7 +13,6 @@ router = APIRouter()
 @router.get("", response_model=list[RecipeOut])
 async def list_recipes(
     search: str | None = None,
-    meal_type: str | None = None,
     max_calories: float | None = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),

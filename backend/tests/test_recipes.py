@@ -51,3 +51,20 @@ async def test_search_recipes(auth_client):
     response = await auth_client.get("/recipes?search=chicken")
     assert response.status_code == 200
     assert all("chicken" in r["name"].lower() for r in response.json())
+
+
+async def test_cannot_access_other_users_private_recipe(client):
+    # Register user A, create a private recipe
+    await client.post("/auth/register", json={
+        "email": "usera@example.com", "password": "password123", "name": "User A"
+    })
+    recipe = (await client.post("/recipes", json={
+        "name": "Secret Recipe", "calories": 100, "is_public": False
+    })).json()
+    # Log out and register user B
+    await client.post("/auth/logout")
+    await client.post("/auth/register", json={
+        "email": "userb@example.com", "password": "password123", "name": "User B"
+    })
+    response = await client.get(f"/recipes/{recipe['id']}")
+    assert response.status_code == 403
