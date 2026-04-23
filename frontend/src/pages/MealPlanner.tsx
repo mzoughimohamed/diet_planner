@@ -21,7 +21,10 @@ function getMondayOf(date: Date): Date {
 }
 
 function formatDate(d: Date): string {
-  return d.toISOString().split('T')[0]
+  const yyyy = d.getFullYear()
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${yyyy}-${mm}-${dd}`
 }
 
 export default function MealPlanner() {
@@ -47,14 +50,16 @@ export default function MealPlanner() {
   })
 
   const addEntryMutation = useMutation({
-    mutationFn: ({ recipeId }: { recipeId?: number }) =>
-      addMealPlanEntry(activePlan!.id, {
-        day_of_week: showAddModal!.day,
-        meal_type: showAddModal!.type,
-        recipe_id: recipeId ?? null,
+    mutationFn: ({ recipeId, day, type }: { recipeId: number; day: number; type: string }) => {
+      if (!activePlan) throw new Error('No active plan')
+      return addMealPlanEntry(activePlan.id, {
+        day_of_week: day,
+        meal_type: type,
+        recipe_id: recipeId,
         custom_meal_name: null,
         servings: 1,
-      }),
+      })
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['meal-plan', activePlan?.id] })
       setShowAddModal(null)
@@ -62,12 +67,18 @@ export default function MealPlanner() {
   })
 
   const removeEntryMutation = useMutation({
-    mutationFn: (entryId: number) => deleteMealPlanEntry(activePlan!.id, entryId),
+    mutationFn: (entryId: number) => {
+      if (!activePlan) throw new Error('No active plan')
+      return deleteMealPlanEntry(activePlan.id, entryId)
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['meal-plan', activePlan?.id] }),
   })
 
   const generateListMutation = useMutation({
-    mutationFn: () => generateShoppingList(activePlan!.id),
+    mutationFn: () => {
+      if (!activePlan) throw new Error('No active plan')
+      return generateShoppingList(activePlan.id)
+    },
     onSuccess: () => alert('Shopping list generated! Check the Shopping List page.'),
   })
 
@@ -160,7 +171,7 @@ export default function MealPlanner() {
               {recipes.map((r: Recipe) => (
                 <button
                   key={r.id}
-                  onClick={() => addEntryMutation.mutate({ recipeId: r.id })}
+                  onClick={() => addEntryMutation.mutate({ recipeId: r.id, day: showAddModal.day, type: showAddModal.type })}
                   disabled={addEntryMutation.isPending}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-brand-50 text-sm disabled:opacity-60"
                 >
