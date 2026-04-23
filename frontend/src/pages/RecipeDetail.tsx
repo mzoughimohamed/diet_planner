@@ -25,9 +25,9 @@ interface IngredientRow extends IngredientItem {
   _key: string
 }
 
-const uid = () =>
+const uid = (): string =>
   typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-    ? uid()
+    ? crypto.randomUUID()
     : Math.random().toString(36).slice(2) + Date.now().toString(36)
 
 export default function RecipeDetail() {
