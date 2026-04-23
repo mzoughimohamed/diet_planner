@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
 import { register } from '../lib/api'
+import type { RegisterPayload } from '../lib/api'
+
+type StringFormKeys = 'email' | 'password' | 'name' | 'age' | 'height_cm' | 'weight_kg'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -14,7 +17,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+  const set = (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -22,28 +25,30 @@ export default function Register() {
     setError('')
     setLoading(true)
     try {
-      const payload = {
+      const payload: RegisterPayload = {
         ...form,
-        age: form.age ? Number(form.age) : undefined,
-        height_cm: form.height_cm ? Number(form.height_cm) : undefined,
-        weight_kg: form.weight_kg ? Number(form.weight_kg) : undefined,
+        age: form.age.trim() !== '' ? Number(form.age) : undefined,
+        height_cm: form.height_cm.trim() !== '' ? Number(form.height_cm) : undefined,
+        weight_kg: form.weight_kg.trim() !== '' ? Number(form.weight_kg) : undefined,
       }
       const user = await register(payload)
       queryClient.setQueryData(['me'], user)
       navigate('/')
-    } catch {
+    } catch (err) {
+      console.error('[register]', err)
       setError('Registration failed. Email may already be in use.')
     } finally {
       setLoading(false)
     }
   }
 
-  const field = (label: string, key: string, type = 'text', required = false) => (
+  const field = (label: string, key: StringFormKeys, type = 'text', required = false) => (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}{required && ' *'}</label>
+      <label htmlFor={key} className="block text-sm font-medium text-gray-700 mb-1">{label}{required && ' *'}</label>
       <input
-        type={type} required={required} value={(form as Record<string, string>)[key]}
+        id={key} type={type} required={required} value={form[key]}
         onChange={set(key)}
+        autoComplete={type === 'password' ? 'new-password' : undefined}
         className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
     </div>
@@ -62,8 +67,8 @@ export default function Register() {
           <div className="grid grid-cols-2 gap-4">
             {field('Age', 'age', 'number')}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-              <select value={form.gender} onChange={set('gender')} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+              <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+              <select id="gender" value={form.gender} onChange={set('gender')} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
                 <option value="">Select</option>
                 <option value="male">Male</option>
                 <option value="female">Female</option>
@@ -75,16 +80,16 @@ export default function Register() {
             {field('Weight (kg)', 'weight_kg', 'number')}
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Goal</label>
-            <select value={form.goal} onChange={set('goal')} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <label htmlFor="goal" className="block text-sm font-medium text-gray-700 mb-1">Goal</label>
+            <select id="goal" value={form.goal} onChange={set('goal')} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
               <option value="lose">Lose weight</option>
               <option value="maintain">Maintain weight</option>
               <option value="gain">Gain weight</option>
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Activity level</label>
-            <select value={form.activity_level} onChange={set('activity_level')} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+            <label htmlFor="activity_level" className="block text-sm font-medium text-gray-700 mb-1">Activity level</label>
+            <select id="activity_level" value={form.activity_level} onChange={set('activity_level')} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
               <option value="sedentary">Sedentary</option>
               <option value="light">Lightly active</option>
               <option value="moderate">Moderately active</option>

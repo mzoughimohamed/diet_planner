@@ -18,7 +18,8 @@ export default function Login() {
       const user = await login(form.email, form.password)
       queryClient.setQueryData(['me'], user)
       navigate('/')
-    } catch {
+    } catch (err) {
+      console.error('[login]', err)
       setError('Invalid email or password')
     } finally {
       setLoading(false)
@@ -33,18 +34,18 @@ export default function Login() {
         {error && <p className="mb-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
-              type="email" required
+              id="email" type="email" required
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
-              type="password" required
+              id="password" type="password" required
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"

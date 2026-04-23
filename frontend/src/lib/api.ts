@@ -13,11 +13,23 @@ api.interceptors.response.use(
   }
 )
 
+export interface RegisterPayload {
+  email: string
+  password: string
+  name: string
+  age?: number
+  gender?: string
+  height_cm?: number
+  weight_kg?: number
+  goal: string
+  activity_level: string
+}
+
 // Auth
 export const getMe = () => api.get<User>('/auth/me').then((r) => r.data)
 export const login = (email: string, password: string) =>
   api.post<User>('/auth/login', { email, password }).then((r) => r.data)
-export const register = (data: object) => api.post<User>('/auth/register', data).then((r) => r.data)
+export const register = (data: RegisterPayload) => api.post<User>('/auth/register', data).then((r) => r.data)
 export const logout = () => api.post('/auth/logout')
 export const updateMe = (data: object) => api.put<User>('/auth/me', data).then((r) => r.data)
 
