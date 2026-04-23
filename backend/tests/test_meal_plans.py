@@ -1,7 +1,3 @@
-import pytest
-from datetime import date
-
-
 async def test_create_meal_plan(auth_client):
     response = await auth_client.post("/meal-plans", json={
         "week_start_date": "2026-04-21",

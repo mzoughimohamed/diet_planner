@@ -28,7 +28,7 @@ async def create_meal_plan(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    plan = MealPlan(user_id=current_user.id, **body.model_dump())
+    plan = MealPlan(user_id=current_user.id, **body.model_dump(mode="json"))
     db.add(plan)
     await db.commit()
     await db.refresh(plan)
@@ -60,7 +60,7 @@ async def add_entry(
     result = await db.execute(select(MealPlan).where(MealPlan.id == plan_id, MealPlan.user_id == current_user.id))
     if not result.scalar_one_or_none():
         raise HTTPException(status_code=404, detail="Meal plan not found")
-    entry = MealPlanEntry(meal_plan_id=plan_id, **body.model_dump())
+    entry = MealPlanEntry(meal_plan_id=plan_id, **body.model_dump(mode="json"))
     db.add(entry)
     await db.commit()
     await db.refresh(entry)
@@ -85,7 +85,7 @@ async def update_entry(
     entry = result.scalar_one_or_none()
     if not entry:
         raise HTTPException(status_code=404, detail="Entry not found")
-    for field, value in body.model_dump(exclude_none=True).items():
+    for field, value in body.model_dump(exclude_none=True, mode="json").items():
         setattr(entry, field, value)
     await db.commit()
     await db.refresh(entry)
