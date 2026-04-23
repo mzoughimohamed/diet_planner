@@ -55,5 +55,5 @@ async def delete_progress(
     log = result.scalar_one_or_none()
     if not log:
         raise HTTPException(status_code=404, detail="Log not found")
-    db.delete(log)
+    await db.delete(log)
     await db.commit()

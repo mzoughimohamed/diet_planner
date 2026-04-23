@@ -25,6 +25,11 @@ interface IngredientRow extends IngredientItem {
   _key: string
 }
 
+const uid = () =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? uid()
+    : Math.random().toString(36).slice(2) + Date.now().toString(36)
+
 export default function RecipeDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -56,7 +61,7 @@ export default function RecipeDetail() {
         instructions: recipe.instructions ?? '',
         is_public: recipe.is_public,
       })
-      setIngredients(recipe.ingredients.map((ing) => ({ ...ing, _key: crypto.randomUUID() })))
+      setIngredients(recipe.ingredients.map((ing) => ({ ...ing, _key: uid() })))
     }
   }, [recipe])
 
@@ -89,7 +94,7 @@ export default function RecipeDetail() {
   const set = (key: keyof FormShape) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [key]: e.target.type === 'checkbox' ? (e.target as HTMLInputElement).checked : e.target.value }))
 
-  const addIngredient = () => setIngredients((i) => [...i, { name: '', quantity: undefined, unit: '', _key: crypto.randomUUID() }])
+  const addIngredient = () => setIngredients((i) => [...i, { name: '', quantity: undefined, unit: '', _key: uid() }])
   const removeIngredient = (key: string) => setIngredients((i) => i.filter((ing) => ing._key !== key))
   const setIngredient = (key: string, field: keyof IngredientItem, value: string) =>
     setIngredients((prev) => prev.map((item) =>
