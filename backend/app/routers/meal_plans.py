@@ -1,10 +1,13 @@
+from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.auth import get_current_user
 from app.core.database import get_db
 from app.models.meal_plan import MealPlan, MealPlanEntry
+from app.models.recipe import Recipe
 from app.models.user import User
+from app.services.push_service import send_push_to_user
 from app.schemas.meal_plan import (
     MealPlanCreate, MealPlanDetail, MealPlanEntryCreate,
     MealPlanEntryOut, MealPlanEntryUpdate, MealPlanOut,
@@ -67,6 +70,35 @@ async def add_entry(
     db.add(entry)
     await db.commit()
     await db.refresh(entry)
+
+    # Fire calorie alert if today's planned calories cross 80% of target
+    today_dow = date.today().weekday()  # 0=Mon, matches day_of_week field
+    if body.day_of_week == today_dow:
+        entries_result = await db.execute(
+            select(MealPlanEntry).where(
+                MealPlanEntry.meal_plan_id == plan_id,
+                MealPlanEntry.day_of_week == today_dow,
+            )
+        )
+        today_entries = entries_result.scalars().all()
+        total: float = 0.0
+        for e in today_entries:
+            if e.calories_override is not None:
+                total += e.calories_override
+            elif e.recipe_id is not None:
+                r_res = await db.execute(select(Recipe).where(Recipe.id == e.recipe_id))
+                recipe = r_res.scalar_one_or_none()
+                if recipe:
+                    total += recipe.calories * e.servings
+        target = current_user.daily_calorie_target
+        if total >= target * 0.8:
+            await send_push_to_user(
+                current_user.id,
+                "Calorie Goal Alert 🎯",
+                f"You're at {int(total)} kcal — {int(target - total)} kcal left today!",
+                db,
+            )
+
     return entry
 
 
