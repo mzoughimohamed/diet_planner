@@ -1,4 +1,3 @@
-# backend/app/core/config.py
 from pathlib import Path
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
@@ -14,6 +13,9 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 10080
     ollama_host: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
+    vapid_private_key: str = ""
+    vapid_public_key: str = ""
+    vapid_claims_sub: str = "mailto:admin@example.com"
 
 
 settings = Settings()
