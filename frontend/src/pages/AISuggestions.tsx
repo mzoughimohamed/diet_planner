@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send } from 'lucide-react'
+import { Send, WifiOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import ChatMessage from '../components/ChatMessage'
+import { useOnlineStatus } from '../hooks/useOnlineStatus'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -9,6 +10,7 @@ interface Message {
 }
 
 export default function AISuggestions() {
+  const isOnline = useOnlineStatus()
   const { user } = useAuth()
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -98,6 +100,18 @@ export default function AISuggestions() {
     } finally {
       setStreaming(false)
     }
+  }
+
+  if (!isOnline) {
+    return (
+      <div className="p-6 max-w-2xl mx-auto flex flex-col items-center justify-center h-64 gap-4">
+        <WifiOff size={40} className="text-gray-300" />
+        <p className="text-gray-400 text-sm text-center">
+          AI Suggestions require an internet connection.<br />
+          Reconnect to use this feature.
+        </p>
+      </div>
+    )
   }
 
   return (
