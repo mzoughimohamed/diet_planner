@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.core.database import Base
 from app.routers import auth, recipes, meal_plans, shopping_lists, progress, ai
 from app.routers import push
+from app.services.scheduler import setup_scheduler, scheduler
 
 
 @asynccontextmanager
@@ -17,7 +18,9 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     await engine.dispose()
+    setup_scheduler()
     yield
+    scheduler.shutdown(wait=False)
 
 
 app = FastAPI(title="Diet Planner API", version="1.0.0", lifespan=lifespan)
