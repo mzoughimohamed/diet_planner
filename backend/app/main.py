@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from app.core.config import settings
 from app.core.database import Base
 from app.routers import auth, recipes, meal_plans, shopping_lists, progress, ai
+from app.routers import push
 
 
 @asynccontextmanager
@@ -35,6 +36,7 @@ app.include_router(meal_plans.router, prefix="/meal-plans", tags=["meal-plans"])
 app.include_router(shopping_lists.router, prefix="/shopping-lists", tags=["shopping-lists"])
 app.include_router(progress.router, prefix="/progress", tags=["progress"])
 app.include_router(ai.router, prefix="/ai", tags=["ai"])
+app.include_router(push.router, prefix="/push", tags=["push"])
 
 
 @app.get("/health")
