@@ -6,6 +6,8 @@ import {
   LayoutDashboard, CalendarDays, UtensilsCrossed, ShoppingCart,
   TrendingUp, Bot, User, Menu, LogOut,
 } from 'lucide-react'
+import OfflineBanner from './OfflineBanner'
+import { usePushNotifications } from '../hooks/usePushNotifications'
 
 const NAV_ITEMS = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -60,37 +62,41 @@ const SidebarContent = ({ userName, onNavClick, onLogout }: SidebarContentProps)
 export default function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  usePushNotifications()
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:w-64 bg-white border-r flex-col flex-shrink-0">
-        <SidebarContent userName={user?.name} onNavClick={() => {}} onLogout={logout} />
-      </aside>
+    <div className="flex flex-col h-screen bg-gray-50">
+      <OfflineBanner />
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop sidebar */}
+        <aside className="hidden md:flex md:w-64 bg-white border-r flex-col flex-shrink-0">
+          <SidebarContent userName={user?.name} onNavClick={() => {}} onLogout={logout} />
+        </aside>
 
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 flex md:hidden">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
-          <aside className="relative z-50 w-64 bg-white flex flex-col">
-            <SidebarContent userName={user?.name} onNavClick={() => setSidebarOpen(false)} onLogout={logout} />
-          </aside>
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div className="fixed inset-0 z-40 flex md:hidden">
+            <div className="fixed inset-0 bg-black/50" onClick={() => setSidebarOpen(false)} />
+            <aside className="relative z-50 w-64 bg-white flex flex-col">
+              <SidebarContent userName={user?.name} onNavClick={() => setSidebarOpen(false)} onLogout={logout} />
+            </aside>
+          </div>
+        )}
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Mobile header */}
+          <header className="md:hidden flex items-center px-4 h-14 bg-white border-b">
+            <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md text-gray-600">
+              <Menu size={22} />
+            </button>
+            <h1 className="ml-3 text-lg font-semibold text-brand-600">Diet Planner</h1>
+          </header>
+
+          <main className="flex-1 overflow-y-auto">
+            {children}
+          </main>
         </div>
-      )}
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile header */}
-        <header className="md:hidden flex items-center px-4 h-14 bg-white border-b">
-          <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md text-gray-600">
-            <Menu size={22} />
-          </button>
-          <h1 className="ml-3 text-lg font-semibold text-brand-600">Diet Planner</h1>
-        </header>
-
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
       </div>
     </div>
   )

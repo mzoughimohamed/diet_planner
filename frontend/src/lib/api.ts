@@ -66,3 +66,8 @@ export const deleteShoppingItem = (listId: number, itemId: number) =>
 export const getProgress = (params?: object) => api.get<ProgressLog[]>('/progress', { params }).then((r) => r.data)
 export const logProgress = (data: object) => api.post<ProgressLog>('/progress', data).then((r) => r.data)
 export const deleteProgress = (id: number) => api.delete(`/progress/${id}`)
+
+// Push notifications
+export const subscribePush = (data: { endpoint: string; keys: { p256dh: string; auth: string } }) =>
+  api.post('/push/subscribe', data)
+export const unsubscribePush = () => api.delete('/push/subscribe')
