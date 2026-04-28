@@ -1,12 +1,13 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const jest: any;
+import { jest } from '@jest/globals';
 
-const mockDb = {
-  execAsync: jest.fn().mockResolvedValue(undefined),
-  runAsync: jest.fn().mockResolvedValue({ lastInsertRowId: 1, changes: 1 }),
-  getAllAsync: jest.fn().mockResolvedValue([]),
-  getFirstAsync: jest.fn().mockResolvedValue(null),
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockDb: any = {
+  execAsync: (jest.fn() as any).mockResolvedValue(undefined),
+  runAsync: (jest.fn() as any).mockResolvedValue({ lastInsertRowId: 1, changes: 1 }),
+  getAllAsync: (jest.fn() as any).mockResolvedValue([]),
+  getFirstAsync: (jest.fn() as any).mockResolvedValue(null),
 };
 
-export const openDatabaseAsync = jest.fn().mockResolvedValue(mockDb);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const openDatabaseAsync = (jest.fn() as any).mockResolvedValue(mockDb);
 export const __mockDb = mockDb;
