@@ -6,7 +6,7 @@
     "scheme": "dietplanner",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "splash": { "image": "./assets/splash.png", "resizeMode": "contain", "backgroundColor": "#ffffff" },
+    "splash": { "image": "./assets/splash-icon.png", "resizeMode": "contain", "backgroundColor": "#ffffff" },
     "ios": { "supportsTablet": false, "bundleIdentifier": "com.mzoughi.dietplanner" },
     "android": { "package": "com.mzoughi.dietplanner", "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#22c55e" } },
     "plugins": [
