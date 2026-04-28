@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Diet Planner",
+    "slug": "diet-planner",
+    "version": "1.0.0",
+    "scheme": "dietplanner",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": { "image": "./assets/splash.png", "resizeMode": "contain", "backgroundColor": "#ffffff" },
+    "ios": { "supportsTablet": false, "bundleIdentifier": "com.mzoughi.dietplanner" },
+    "android": { "package": "com.mzoughi.dietplanner", "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#22c55e" } },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      ["expo-camera", { "cameraPermission": "Allow Diet Planner to take food photos." }],
+      ["expo-image-picker", { "photosPermission": "Allow Diet Planner to pick food photos." }],
+      ["expo-notifications", { "sounds": [] }]
+    ],
+    "experiments": { "typedRoutes": true }
+  }
+}
