@@ -25,8 +25,18 @@ export default function Progress() {
   }, [range, today, fetchRange]);
 
   const handleLogWeight = async () => {
-    if (!weight) return;
-    await logProgress({ date: today, calories_consumed: 0, protein: 0, carbs: 0, fat: 0, weight: Number(weight), notes });
+    const parsed = parseFloat(weight);
+    if (!weight || isNaN(parsed)) return;
+    const existing = entries.find((e) => e.date === today);
+    await logProgress({
+      date: today,
+      calories_consumed: existing?.calories_consumed ?? 0,
+      protein: existing?.protein ?? 0,
+      carbs: existing?.carbs ?? 0,
+      fat: existing?.fat ?? 0,
+      weight: parsed,
+      notes,
+    });
     setWeight(''); setNotes('');
     Alert.alert('Logged', 'Weight entry saved.');
   };
