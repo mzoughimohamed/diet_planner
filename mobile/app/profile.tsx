@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ScrollView, View, Text, TextInput, TouchableOpacity, Switch, Alert, Platform } from 'react-native';
+import { ScrollView, View, Text, TextInput, TouchableOpacity, Switch, Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { useProfileStore } from '../stores/profileStore';
 
@@ -42,23 +42,44 @@ export default function ProfileModal() {
   }, [profile]);
 
   const handleSave = async () => {
-    await updateProfile({
-      name,
-      calorie_goal: Number(calorieGoal),
-      protein_goal: Number(proteinGoal),
-      carbs_goal: Number(carbsGoal),
-      fat_goal: Number(fatGoal),
-    });
-    Alert.alert('Saved', 'Profile updated.');
+    const cal = Number(calorieGoal);
+    const prot = Number(proteinGoal);
+    const carbs = Number(carbsGoal);
+    const fat = Number(fatGoal);
+    if ([cal, prot, carbs, fat].some((v) => !Number.isFinite(v) || v < 0)) {
+      Alert.alert('Invalid input', 'All goals must be positive numbers.');
+      return;
+    }
+    try {
+      await updateProfile({ name, calorie_goal: cal, protein_goal: prot, carbs_goal: carbs, fat_goal: fat });
+      Alert.alert('Saved', 'Profile updated.');
+    } catch {
+      Alert.alert('Error', 'Failed to save profile. Please try again.');
+    }
   };
 
   const handleToggleReminders = async (value: boolean) => {
     if (value) {
-      const granted = await requestNotificationPermission();
-      if (!granted) { Alert.alert('Permission denied', 'Enable notifications in Settings.'); return; }
-      await scheduleDailyReminder(Number(reminderHour), Number(reminderMin), '🍽️ Meal reminder', "Don't forget to log your meals!");
+      const h = Number(reminderHour);
+      const m = Number(reminderMin);
+      if (!Number.isInteger(h) || h < 0 || h > 23 || !Number.isInteger(m) || m < 0 || m > 59) {
+        Alert.alert('Invalid time', 'Hour must be 0–23, minute 0–59.');
+        return;
+      }
+      try {
+        const granted = await requestNotificationPermission();
+        if (!granted) { Alert.alert('Permission denied', 'Enable notifications in Settings.'); return; }
+        await scheduleDailyReminder(h, m, '🍽️ Meal reminder', "Don't forget to log your meals!");
+      } catch {
+        Alert.alert('Error', 'Could not schedule reminder. Please try again.');
+        return;
+      }
     } else {
-      await Notifications.cancelAllScheduledNotificationsAsync();
+      try {
+        await Notifications.cancelAllScheduledNotificationsAsync();
+      } catch {
+        // Best effort cancel
+      }
     }
     setRemindersOn(value);
   };
