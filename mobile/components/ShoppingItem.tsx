@@ -19,13 +19,13 @@ export function ShoppingItem({ item, onToggle, onDelete }: Props) {
     <View className="flex-row items-center bg-white rounded-xl px-4 py-3 mb-2 shadow-sm">
       <TouchableOpacity onPress={handleToggle} className="mr-3">
         <Ionicons
-          name={item.checked ? 'checkbox' : 'square-outline'}
+          name={!!item.checked ? 'checkbox' : 'square-outline'}
           size={22}
-          color={item.checked ? '#22c55e' : '#9ca3af'}
+          color={!!item.checked ? '#22c55e' : '#9ca3af'}
         />
       </TouchableOpacity>
       <View className="flex-1">
-        <Text className={`font-medium ${item.checked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+        <Text className={`font-medium ${!!item.checked ? 'line-through text-gray-400' : 'text-gray-800'}`}>
           {item.name}
         </Text>
         <Text className="text-gray-400 text-xs">{item.amount} {item.unit}</Text>

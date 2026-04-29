@@ -11,7 +11,7 @@ export default function Shopping() {
   const [amount, setAmount] = useState('');
   const [unit, setUnit] = useState('');
 
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => { fetchItems(); }, [fetchItems]);
 
   const handleAdd = async () => {
     if (!name) return;
